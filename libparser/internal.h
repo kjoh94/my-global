@@ -30,6 +30,11 @@
 	param->put(type, tag, lno, curfile, line, param->arg);		\
 } while (0)
 
+#define PUT2(type, tag, lno, line) do {					\
+	DBG_PRINT(level, line);						\
+	param->put( (level<<2) | (type&0x3), tag, lno, curfile, line, param->arg); \
+} while (0)
+
 #ifdef DEBUG
 #define DBG_PRINT(level, a) do {					\
 	if (param->flags & PARSER_DEBUG)				\
