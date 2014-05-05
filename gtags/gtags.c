@@ -735,25 +735,45 @@ struct put_func_data {
 	GTOP *gtop[GTAGLIM];
 	const char *fid;
 };
+
+
+static char save_tag[256];
+static char line_image2[512];
+
 static void
 put_syms(int type, const char *tag, int lno, const char *path, const char *line_image, void *arg)
 {
 	const struct put_func_data *data = arg;
 	GTOP *gtop;
 
+  int level = (type>>2);
+  type = type & 0x3;
+  /* if (level > 1) */
+  /*   printf("******* level=%d, tag=%s, line_image=%s*****\n", level, tag, line_image); */
 	switch (type) {
 	case PARSER_DEF:
 		gtop = data->gtop[GTAGS];
+    strncpy(save_tag, tag, sizeof(save_tag));
+    save_tag[255] = NULL;
+    gtags_put_using(gtop, tag, lno, data->fid, line_image);
 		break;
 	case PARSER_REF_SYM:
 		gtop = data->gtop[GRTAGS];
 		if (gtop == NULL)
 			return;
+    if (level > 0)
+    {
+      snprintf(line_image2, sizeof(line_image2), "[%s] %s", save_tag, line_image);
+      line_image2[511] = NULL;
+      gtags_put_using(gtop, tag, lno, data->fid, line_image2);
+    } else {
+      gtags_put_using(gtop, tag, lno, data->fid, line_image);
+    }
 		break;
 	default:
 		return;
 	}
-	gtags_put_using(gtop, tag, lno, data->fid, line_image);
+	//gtags_put_using(gtop, tag, lno, data->fid, line_image);
 }
 /**
  * updatetags: update tag file.
