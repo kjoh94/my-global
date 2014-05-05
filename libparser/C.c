@@ -122,9 +122,9 @@ C_family(const struct parser_param *param, int type)
 		case SYMBOL:		/* symbol	*/
 			if (inC && peekc(0) == '('/* ) */) {
 				if (param->isnotfunction(token)) {
-					PUT(PARSER_REF_SYM, token, lineno, sp);
+					PUT2(PARSER_REF_SYM, token, lineno, sp);
 				} else if (level > 0 || startmacro) {
-					PUT(PARSER_REF_SYM, token, lineno, sp);
+					PUT2(PARSER_REF_SYM, token, lineno, sp);
 				} else if (level == 0 && !startmacro && !startsharp) {
 					char arg1[MAXTOKEN], savetok[MAXTOKEN], *saveline;
 					int savelineno = lineno;
@@ -151,13 +151,13 @@ C_family(const struct parser_param *param, int type)
 					if (function_definition(param, arg1)) {
 						if (!strcmp(savetok, "SCM_DEFINE") && *arg1)
 							strlimcpy(savetok, arg1, sizeof(savetok));
-						PUT(PARSER_DEF, savetok, savelineno, saveline);
+						PUT2(PARSER_DEF, savetok, savelineno, saveline);
 					} else {
-						PUT(PARSER_REF_SYM, savetok, savelineno, saveline);
+						PUT2(PARSER_REF_SYM, savetok, savelineno, saveline);
 					}
 				}
 			} else {
-				PUT(PARSER_REF_SYM, token, lineno, sp);
+				PUT2(PARSER_REF_SYM, token, lineno, sp);
 			}
 			break;
 		case '{':  /* } */
@@ -205,7 +205,7 @@ C_family(const struct parser_param *param, int type)
 				level = 0;
 			}
 			if (yaccstatus == DECLARATIONS) {
-				PUT(PARSER_DEF, "yyparse", lineno, sp);
+				PUT2(PARSER_DEF, "yyparse", lineno, sp);
 				yaccstatus = RULES;
 			} else if (yaccstatus == RULES)
 				yaccstatus = PROGRAMS;
@@ -233,7 +233,7 @@ C_family(const struct parser_param *param, int type)
 			break;
 		case YACC_UNION:	/* %union {...} */
 			if (yaccstatus == DECLARATIONS)
-				PUT(PARSER_DEF, "YYSTYPE", lineno, sp);
+				PUT2(PARSER_DEF, "YYSTYPE", lineno, sp);
 			break;
 		/*
 		 * #xxx
@@ -247,14 +247,14 @@ C_family(const struct parser_param *param, int type)
 				break;
 			}
 			if (peekc(1) == '('/* ) */) {
-				PUT(PARSER_DEF, token, lineno, sp);
+				PUT2(PARSER_DEF, token, lineno, sp);
 				while ((c = nexttoken("()", c_reserved_word)) != EOF && c != '\n' && c != /* ( */ ')')
 					if (c == SYMBOL)
-						PUT(PARSER_REF_SYM, token, lineno, sp);
+						PUT2(PARSER_REF_SYM, token, lineno, sp);
 				if (c == '\n')
 					pushbacktoken();
 			} else {
-				PUT(PARSER_DEF, token, lineno, sp);
+				PUT2(PARSER_DEF, token, lineno, sp);
 			}
 			break;
 		case SHARP_IMPORT:
@@ -301,9 +301,9 @@ C_family(const struct parser_param *param, int type)
 				process_attribute(param);
 			if (c == SYMBOL) {
 				if (peekc(0) == '{') /* } */ {
-					PUT(PARSER_DEF, token, lineno, sp);
+					PUT2(PARSER_DEF, token, lineno, sp);
 				} else {
-					PUT(PARSER_REF_SYM, token, lineno, sp);
+					PUT2(PARSER_REF_SYM, token, lineno, sp);
 				}
 				c = nexttoken(interested, c_reserved_word);
 			}
@@ -358,9 +358,9 @@ C_family(const struct parser_param *param, int type)
 					/* read tag name if exist */
 					if (c == SYMBOL) {
 						if (peekc(0) == '{') /* } */ {
-							PUT(PARSER_DEF, token, lineno, sp);
+							PUT2(PARSER_DEF, token, lineno, sp);
 						} else {
-							PUT(PARSER_REF_SYM, token, lineno, sp);
+							PUT2(PARSER_REF_SYM, token, lineno, sp);
 						}
 						c = nexttoken(interest_enum, c_reserved_word);
 					}
@@ -386,7 +386,7 @@ C_family(const struct parser_param *param, int type)
 							}
 							if (c == ';' && level == typedef_savelevel) {
 								if (savetok[0])
-									PUT(PARSER_DEF, savetok, savelineno, sp);
+									PUT2(PARSER_DEF, savetok, savelineno, sp);
 								break;
 							} else if (c == '{')
 								level++;
@@ -394,7 +394,7 @@ C_family(const struct parser_param *param, int type)
 								if (--level == typedef_savelevel)
 									break;
 							} else if (c == SYMBOL) {
-								PUT(PARSER_REF_SYM, token, lineno, sp);
+								PUT2(PARSER_REF_SYM, token, lineno, sp);
 								/* save lastest token */
 								strlimcpy(savetok, token, sizeof(savetok));
 								savelineno = lineno;
@@ -408,7 +408,7 @@ C_family(const struct parser_param *param, int type)
 						break;
 					}
 				} else if (c == SYMBOL) {
-					PUT(PARSER_REF_SYM, token, lineno, sp);
+					PUT2(PARSER_REF_SYM, token, lineno, sp);
 				}
 				savetok[0] = 0;
 				while ((c = nexttoken("(),;", c_reserved_word)) != EOF) {
@@ -430,11 +430,11 @@ C_family(const struct parser_param *param, int type)
 						level--;
 					else if (c == SYMBOL) {
 						if (level > typedef_savelevel) {
-							PUT(PARSER_REF_SYM, token, lineno, sp);
+							PUT2(PARSER_REF_SYM, token, lineno, sp);
 						} else {
 							/* put latest token if any */
 							if (savetok[0]) {
-								PUT(PARSER_REF_SYM, savetok, savelineno, sp);
+								PUT2(PARSER_REF_SYM, savetok, savelineno, sp);
 							}
 							/* save lastest token */
 							strlimcpy(savetok, token, sizeof(savetok));
@@ -442,7 +442,7 @@ C_family(const struct parser_param *param, int type)
 						}
 					} else if (c == ',' || c == ';') {
 						if (savetok[0]) {
-							PUT(PARSER_DEF, savetok, lineno, sp);
+							PUT2(PARSER_DEF, savetok, lineno, sp);
 							savetok[0] = 0;
 						}
 					}
@@ -491,7 +491,7 @@ process_attribute(const struct parser_param *param)
 		else if (c == ')')
 			brace--;
 		else if (c == SYMBOL) {
-			PUT(PARSER_REF_SYM, token, lineno, sp);
+			PUT2(PARSER_REF_SYM, token, lineno, sp);
 		}
 		if (brace == 0)
 			break;
@@ -537,7 +537,7 @@ function_definition(const struct parser_param *param, char arg1[MAXTOKEN])
 				accept_arg1 = 1;
 				strlimcpy(arg1, token, MAXTOKEN);
 			}
-			PUT(PARSER_REF_SYM, token, lineno, sp);
+			PUT2(PARSER_REF_SYM, token, lineno, sp);
 		}
 	}
 	if (c == EOF)
@@ -579,7 +579,7 @@ function_definition(const struct parser_param *param, char arg1[MAXTOKEN])
 
 		/* pick up symbol */
 		if (c == SYMBOL)
-			PUT(PARSER_REF_SYM, token, lineno, sp);
+			PUT2(PARSER_REF_SYM, token, lineno, sp);
 	}
 	return 0;
 }
@@ -640,7 +640,7 @@ condition_macro(const struct parser_param *param, int cc)
 	}
 	while ((cc = nexttoken(NULL, c_reserved_word)) != EOF && cc != '\n') {
 		if (cc == SYMBOL && strcmp(token, "defined") != 0)
-			PUT(PARSER_REF_SYM, token, lineno, sp);
+			PUT2(PARSER_REF_SYM, token, lineno, sp);
 	}
 }
 
@@ -666,9 +666,9 @@ enumerator_list(const struct parser_param *param)
 			break;
 		case SYMBOL:
 			if (in_expression)
-				PUT(PARSER_REF_SYM, token, lineno, sp);
+				PUT2(PARSER_REF_SYM, token, lineno, sp);
 			else
-				PUT(PARSER_DEF, token, lineno, sp);
+				PUT2(PARSER_DEF, token, lineno, sp);
 			break;
 		case '{':
 		case '(':

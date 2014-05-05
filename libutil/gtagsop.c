@@ -388,7 +388,7 @@ gtags_open(const char *dbpath, const char *root, int db, int mode, int flags)
 		 * GTAGS uses compact format only when the -c option specified.
 		 */
 		if (gtop->db == GRTAGS || gtop->db == GSYMS || gtop->openflags & GTAGS_COMPACT) {
-			gtop->format |= GTAGS_COMPACT;
+			//kjoh gtop->format |= GTAGS_COMPACT;
 			gtop->format |= GTAGS_COMPLINE;
 		} else {
 			/* standard format */
